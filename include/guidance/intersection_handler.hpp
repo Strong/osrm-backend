@@ -598,7 +598,7 @@ std::size_t IntersectionHandler::findObviousTurn(const EdgeID via_edge,
     //     std::cout << "via_edge==" << via_edge << "   old " << obvious_old << " new " <<
     //     obvious_new
     //               << "\n";
-    //     BOOST_ASSERT(false);
+    //     BOOST_ASSERT(obvious_new != 0);
     // }
     (void)obvious_old;
     return obvious_new;
