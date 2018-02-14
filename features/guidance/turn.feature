@@ -1434,21 +1434,21 @@ Feature: Simple Turns
     Scenario: Turn for roads with no name, ref changes
         Given the node map
             """
-              x
-              .
-              .
-              d
-             . .
-            .   .
-           .     .
-     e. . t . c . p. .f
-           .     .
-            .   .
-             . .
-              b
-              .
-              .
-              a
+                     x
+                     .
+                     .
+                     d
+                    . .
+                   .   .
+                  .     .
+            e. . t . c . p. .f
+                  .     .
+                   .   .
+                    . .
+                     b
+                     .
+                     .
+                     a
             """
 
         And the ways
@@ -1460,6 +1460,6 @@ Feature: Simple Turns
             | etcpf | primary     | B 1  |               | no     |
 
        When I route I should get
-            | waypoints | route     | turns                                    |
-            | e,x       | ,,,       | depart,turn sharp left,turn right,arrive |
-            | f,a       | ,,        | depart,turn left,arrive                  |
+            | waypoints | route | turns                   |
+            | e,x       | ,,    | depart,turn left,arrive |
+            | f,a       | ,,    | depart,turn left,arrive |
