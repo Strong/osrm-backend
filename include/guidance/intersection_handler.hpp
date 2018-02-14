@@ -70,8 +70,8 @@ class IntersectionHandler
 
     template <typename IntersectionType> // works with Intersection and IntersectionView
     inline std::size_t IsDistinctTurn(const std::size_t index,
-                               const EdgeID via_edge,
-                               const IntersectionType &intersection) const;
+                                      const EdgeID via_edge,
+                                      const IntersectionType &intersection) const;
 
     template <typename IntersectionType> // works with Intersection and IntersectionView
     inline bool IsDistinctContinue(const std::size_t index,
@@ -149,20 +149,27 @@ class IntersectionHandler
         const auto intersection_node = node_based_graph.GetTarget(via_edge);
         const auto intersection_coordinate = node_coordinates[intersection_node];
         std::stringstream sstr;
-        sstr << "intersection_" << intersection_coordinate.lon << "_" << intersection_coordinate.lat << ".geojson";
+        sstr << "intersection_" << intersection_coordinate.lon << "_" << intersection_coordinate.lat
+             << ".geojson";
         std::ofstream ostr(sstr.str());
         ostr << "{\"type\": \"FeatureCollection\",\"features\": [\n";
-        for (std::size_t i = 0; i < intersection.size(); ++i) {
+        for (std::size_t i = 0; i < intersection.size(); ++i)
+        {
             const auto &road = intersection[i];
             const auto target_node = node_based_graph.GetTarget(road.eid);
             const auto target_coordinate = node_coordinates[target_node];
-            auto color = i == 0 ? "green" : i == index ? "blue" : i == similar_index ? "red" : "gray";
-            ostr << (i == 0 ? "" : ",\n")
-                 << "{\"type\": \"Feature\", \"geometry\": { \"type\": \"LineString\", \"coordinates\": ["
-                 << " [ " << std::setprecision(8) << static_cast<double>(util::toFloating(intersection_coordinate.lon))
-                 << ", " <<  std::setprecision(8) << static_cast<double>(util::toFloating(intersection_coordinate.lat)) << "], "
-                 << " [ " << std::setprecision(8) << static_cast<double>(util::toFloating(target_coordinate.lon))
-                 << ", " << std::setprecision(8) << static_cast<double>(util::toFloating(target_coordinate.lat)) << "]"
+            auto color =
+                i == 0 ? "green" : i == index ? "blue" : i == similar_index ? "red" : "gray";
+            ostr << (i == 0 ? "" : ",\n") << "{\"type\": \"Feature\", \"geometry\": { \"type\": "
+                                             "\"LineString\", \"coordinates\": ["
+                 << " [ " << std::setprecision(8)
+                 << static_cast<double>(util::toFloating(intersection_coordinate.lon)) << ", "
+                 << std::setprecision(8)
+                 << static_cast<double>(util::toFloating(intersection_coordinate.lat)) << "], "
+                 << " [ " << std::setprecision(8)
+                 << static_cast<double>(util::toFloating(target_coordinate.lon)) << ", "
+                 << std::setprecision(8)
+                 << static_cast<double>(util::toFloating(target_coordinate.lat)) << "]"
                  << "] },"
                  << "  \"properties\": { \"stroke\": \"" << color << "\", \"stroke-width\": 4 } }";
         }
@@ -172,7 +179,6 @@ class IntersectionHandler
 
 // Impl.
 using osrm::extractor::getRoadGroup;
-
 
 template <typename IntersectionType> // works with Intersection and IntersectionView
 inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
@@ -494,7 +500,7 @@ inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
 
         auto const itr =
             std::find_if(intersection.begin() + 1, intersection.end(), is_similar_turn);
-        //return itr == intersection.end();
+        // return itr == intersection.end();
         return std::distance(intersection.begin(), itr);
     }
     else
@@ -558,9 +564,11 @@ inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
             return true;
         };
 
-        //return std::find_if(intersection.begin() + 1, intersection.end(), is_similar_turn) ==
+        // return std::find_if(intersection.begin() + 1, intersection.end(), is_similar_turn) ==
         //       intersection.end();
-        return std::distance(intersection.begin(), std::find_if(intersection.begin() + 1, intersection.end(), is_similar_turn));
+        return std::distance(
+            intersection.begin(),
+            std::find_if(intersection.begin() + 1, intersection.end(), is_similar_turn));
     }
 }
 
@@ -724,8 +732,9 @@ std::size_t IntersectionHandler::findObviousTurnNew(const EdgeID via_edge,
         intersection.findClosestTurn(STRAIGHT_ANGLE, valid_of_higher_or_same_category);
 
     if (straightmost_turn_itr != intersection.end() &&
-        IsDistinctTurn(
-            std::distance(intersection.begin(), straightmost_turn_itr), via_edge, intersection) == intersection.size())
+        IsDistinctTurn(std::distance(intersection.begin(), straightmost_turn_itr),
+                       via_edge,
+                       intersection) == intersection.size())
     {
         return to_index_if_valid(straightmost_turn_itr);
     }
@@ -733,7 +742,6 @@ std::size_t IntersectionHandler::findObviousTurnNew(const EdgeID via_edge,
     if (straightmost_turn_itr != intersection.end())
     {
     }
-
 
     auto const valid_turn = [&](auto const &road) { return !road.entry_allowed; };
 
@@ -756,8 +764,9 @@ std::size_t IntersectionHandler::findObviousTurnNew(const EdgeID via_edge,
          straight_is_only_non_sharp) &&
         !node_based_graph.GetEdgeData(straightmost_valid->eid)
              .flags.road_classification.IsLowPriorityRoadClass() &&
-        IsDistinctTurn(
-            std::distance(intersection.begin(), straightmost_valid), via_edge, intersection) == intersection.size())
+        IsDistinctTurn(std::distance(intersection.begin(), straightmost_valid),
+                       via_edge,
+                       intersection) == intersection.size())
     {
         return to_index_if_valid(straightmost_valid);
     }
@@ -786,12 +795,12 @@ std::size_t IntersectionHandler::findObviousTurnNew(const EdgeID via_edge,
         (util::angularDeviation(intersection[1].angle, 90) > NARROW_TURN_ANGLE ||
          util::angularDeviation(intersection[2].angle, 270) > NARROW_TURN_ANGLE))
     {
-    // geojsonIntersection(to_index_if_valid(straightmost_valid),
-    //                     IsDistinctTurn(std::distance(intersection.begin(), straightmost_valid), via_edge, intersection),
-    //                     via_edge, intersection);
-    // static int count = 0;
-    // if (++count>10)exit(1);
-
+        // geojsonIntersection(to_index_if_valid(straightmost_valid),
+        //                     IsDistinctTurn(std::distance(intersection.begin(),
+        //                     straightmost_valid), via_edge, intersection),
+        //                     via_edge, intersection);
+        // static int count = 0;
+        // if (++count>10)exit(1);
 
         return to_index_if_valid(straightmost_valid);
     }
