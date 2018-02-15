@@ -167,8 +167,9 @@ inline bool strictlyLess(const RoadClassification lhs, const RoadClassification 
     const auto lhs_class = getRoadGroup(lhs);
     const auto rhs_class = getRoadGroup(rhs);
     // different class, not neighbors
-    return lhs_class > rhs_class &&
-           ((lhs.GetPriority() - rhs.GetPriority() > 4) || lhs.IsLowPriorityRoadClass());
+    return lhs_class > rhs_class
+        // && ((lhs.GetPriority() - rhs.GetPriority() > 4) || lhs.IsLowPriorityRoadClass())
+        ;
 }
 
 // check whether a link class is the fitting link class to a road

@@ -218,8 +218,9 @@ inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
         if (strictlyLess(compare_data.flags.road_classification,
                          via_edge_data.flags.road_classification) &&
             strictlyLess(compare_data.flags.road_classification,
-                         candidate_data.flags.road_classification) &&
-            override_class_by_lanes(compare_data))
+                         candidate_data.flags.road_classification)
+            // && override_class_by_lanes(compare_data) TODO IRL check
+            )
         {
             return true;
         }
@@ -517,7 +518,8 @@ inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
             // we do not consider roads of far lesser category to be more obvious
             const auto &compare_data = node_based_graph.GetEdgeData(road.eid);
             const auto compare_deviation = util::angularDeviation(road.angle, STRAIGHT_ANGLE);
-            const auto is_compare_straight = getTurnDirection(road.angle) == DirectionModifier::Straight;
+            const auto is_compare_straight =
+                getTurnDirection(road.angle) == DirectionModifier::Straight;
 
             /*
             if (strictlyLess(compare_data.flags.road_classification,
@@ -530,11 +532,11 @@ inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
 
             // if the class is just not on the same level
 
-            if (!is_compare_straight && distinct_by_class(road) && !override_class_by_lanes(compare_data))
+            if (!is_compare_straight && distinct_by_class(road) &&
+                !override_class_by_lanes(compare_data))
             {
                 return false;
             }
-
 
             // just as above,  switching the general road class within a turn is not a likely
             // maneuver. We consider
@@ -563,6 +565,34 @@ inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
             if (compare_deviation > DISTINCTION_RATIO * candidate_deviation)
             {
                 return false;
+            }
+
+            {
+                using osrm::util::bearing::reverse;
+                using osrm::util::bearing::angleBetween;
+                using osrm::util::angularDeviation;
+
+                // TODO: add ASCII-art description
+                // Fix for features/guidance/turn-angles.feature:1177
+                // Check deviations computed in the vicinity of the intersection point
+                // if a road-to-candidate turn has a non-straight direction modifier
+                // (avoid the check for T-shaped intersections)
+                const auto via_edge_initial_bearing = reverse(intersection[0].initial_bearing);
+                const auto candidate_deviation_coord = angularDeviation(
+                    angleBetween(via_edge_initial_bearing, candidate.initial_bearing),
+                    STRAIGHT_ANGLE);
+                const auto road_deviation_coord = angularDeviation(
+                    angleBetween(via_edge_initial_bearing, road.initial_bearing), STRAIGHT_ANGLE);
+                const auto road_to_candidate_angle =
+                    angleBetween(reverse(road.initial_bearing), candidate.initial_bearing);
+                const auto is_straight_road_to_candidate =
+                    getTurnDirection(road_to_candidate_angle) == DirectionModifier::Straight;
+
+                if (!is_straight_road_to_candidate &&
+                    road_deviation_coord > DISTINCTION_RATIO * candidate_deviation_coord)
+                {
+                    return false;
+                }
             }
 
             return true;
@@ -692,8 +722,8 @@ std::size_t IntersectionHandler::findObviousTurnNew(const EdgeID via_edge,
         // auto const to_mode =
         // node_data_container.GetAnnotation(to_data.annotation_data).travel_mode;
 
-        //if (from_mode == to_mode)
-            return std::distance(intersection.begin(), iterator);
+        // if (from_mode == to_mode)
+        return std::distance(intersection.begin(), iterator);
         // else
         //     return 0;
     };
