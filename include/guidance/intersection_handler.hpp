@@ -516,6 +516,9 @@ inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
 
             // we do not consider roads of far lesser category to be more obvious
             const auto &compare_data = node_based_graph.GetEdgeData(road.eid);
+            const auto compare_deviation = util::angularDeviation(road.angle, STRAIGHT_ANGLE);
+            const auto is_compare_straight = getTurnDirection(road.angle) == DirectionModifier::Straight;
+
             /*
             if (strictlyLess(compare_data.flags.road_classification,
             candidate_data.flags.road_classification))
@@ -526,10 +529,12 @@ inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
             */
 
             // if the class is just not on the same level
-            if (distinct_by_class(road) && !override_class_by_lanes(compare_data))
+
+            if (!is_compare_straight && distinct_by_class(road) && !override_class_by_lanes(compare_data))
             {
                 return false;
             }
+
 
             // just as above,  switching the general road class within a turn is not a likely
             // maneuver. We consider
@@ -555,8 +560,7 @@ inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
 
             // if the turn is much stronger, we are also fine (note that we do not have to check
             // absolutes, since candidate is at least > NARROW_TURN_ANGLE
-            const auto compare_deviation = util::angularDeviation(road.angle, STRAIGHT_ANGLE);
-            if (compare_deviation / candidate_deviation > DISTINCTION_RATIO)
+            if (compare_deviation > DISTINCTION_RATIO * candidate_deviation)
             {
                 return false;
             }
