@@ -688,10 +688,10 @@ std::size_t IntersectionHandler::findObviousTurnNew(const EdgeID via_edge,
         // auto const to_mode =
         // node_data_container.GetAnnotation(to_data.annotation_data).travel_mode;
 
-        if (from_mode == to_mode)
+        //if (from_mode == to_mode)
             return std::distance(intersection.begin(), iterator);
-        else
-            return 0;
+        // else
+        //     return 0;
     };
 
     // in case the continuing road is distinct, we prefer continuing on the current road. Only if
