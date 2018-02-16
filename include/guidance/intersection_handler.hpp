@@ -401,7 +401,7 @@ inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
             // turns off it (even if straight). Otherwise people might follow X further than they
             // should
             // For roads splitting with the same name, we ask for a larger difference.
-            auto const minimum_angle_difference = FUZZY_ANGLE_DIFFERENCE;
+            auto const minimum_angle_difference = FUZZY_ANGLE_DIFFERENCE / 2.;
             /*
                 (via_edge_annotation.name_id != EMPTY_NAMEID && !candidate_changes_name &&
                  !name_changes_onto_compare)
