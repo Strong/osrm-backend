@@ -180,6 +180,7 @@ class IntersectionHandler
 // Impl.
 using osrm::extractor::getRoadGroup;
 
+// TODO: revert return type to bool
 template <typename IntersectionType> // works with Intersection and IntersectionView
 inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
                                                        const EdgeID via_edge,
@@ -606,28 +607,6 @@ inline std::size_t IntersectionHandler::IsDistinctTurn(const std::size_t index,
     }
 }
 
-template <typename IntersectionType> // works with Intersection and IntersectionView
-inline bool IntersectionHandler::IsDistinctContinue(const std::size_t index,
-                                                    const EdgeID via_edge,
-                                                    const IntersectionType &intersection) const
-{
-    // if its good enough for a turn, it's good enough for a continue
-    if (IsDistinctTurn(index, via_edge, intersection) == intersection.size())
-        return true;
-
-    auto const in_classification = node_based_graph.GetEdgeData(via_edge).flags.road_classification;
-    auto const continue_classification =
-        node_based_graph.GetEdgeData(intersection[index].eid).flags.road_classification;
-
-    // nearly straight on the same road type
-    if (in_classification.GetPriority() == continue_classification.GetPriority() &&
-        util::angularDeviation(intersection[index].angle, STRAIGHT_ANGLE) <
-            MAXIMAL_ALLOWED_NO_TURN_DEVIATION)
-        return true;
-
-    return false;
-}
-
 // Impl.
 template <typename IntersectionType> // works with Intersection and IntersectionView
 std::size_t IntersectionHandler::findObviousTurn(const EdgeID via_edge,
@@ -731,8 +710,9 @@ std::size_t IntersectionHandler::findObviousTurnNew(const EdgeID via_edge,
     // in case the continuing road is distinct, we prefer continuing on the current road. Only if
     // continue does not exist or we are not distinct, we look for other possible candidates
     if (road_continues_itr != intersection.end() &&
-        IsDistinctContinue(
-            std::distance(intersection.begin(), road_continues_itr), via_edge, intersection))
+        IsDistinctTurn(std::distance(intersection.begin(), road_continues_itr),
+                       via_edge,
+                       intersection) == intersection.size())
     {
         return to_index_if_valid(road_continues_itr);
     }
